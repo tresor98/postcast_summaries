@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Podcast Summaries</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0F0F0F;
+      --surface: #181818;
+      --surface2: #222222;
+      --border: #2A2A2A;
+      --text: #F0EDE6;
+      --muted: #888880;
+      --accent: #E8A838;
+      --accent-dim: rgba(232, 168, 56, 0.12);
+      --pill-m-bg: rgba(99, 130, 255, 0.15);
+      --pill-m-text: #8FA8FF;
+      --pill-i-bg: rgba(72, 199, 142, 0.15);
+      --pill-i-text: #5ECFA0;
+      --pill-w-bg: rgba(232, 168, 56, 0.15);
+      --pill-w-text: #E8A838;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 48px 40px 36px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .header-left h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 400;
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+      color: var(--text);
+    }
+
+    .header-left h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .header-left p {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 300;
+    }
+
+    /* signal wave SVG mark */
+    .signal-mark {
+      flex-shrink: 0;
+      opacity: 0.35;
+    }
+
+    /* ── GRID ── */
+    main {
+      padding: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--accent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .card:hover {
+      border-color: #3A3A3A;
+      background: var(--surface2);
+      transform: translateY(-2px);
+    }
+
+    .card:hover::before { opacity: 1; }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .card-ep {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .card-date {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .card h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 20px;
+      font-weight: 400;
+      line-height: 1.25;
+      color: var(--text);
+    }
+
+    .card-guest {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .card-guest strong {
+      color: #B0ADA6;
+      font-weight: 500;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .pill-m { background: var(--pill-m-bg); color: var(--pill-m-text); }
+    .pill-i { background: var(--pill-i-bg); color: var(--pill-i-text); }
+    .pill-w { background: var(--pill-w-bg); color: var(--pill-w-text); }
+
+    .card-preview {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-footer {
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-count {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .card-arrow {
+      font-size: 16px;
+      color: var(--accent);
+      transition: transform 0.2s;
+    }
+    .card:hover .card-arrow { transform: translateX(4px); }
+
+    /* ── MODAL OVERLAY ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 100;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 20px;
+      overflow-y: auto;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 820px;
+      overflow: hidden;
+      transform: translateY(16px);
+      transition: transform 0.25s;
+    }
+
+    .overlay.open .modal { transform: translateY(0); }
+
+    .modal-header {
+      padding: 32px 36px 24px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--surface);
+      z-index: 10;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .modal-header-left { flex: 1; }
+
+    .modal-ep {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .modal-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(22px, 3vw, 30px);
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--text);
+    }
+
+    .modal-guest {
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .modal-guest strong { color: #B0ADA6; font-weight: 500; }
+
+    .close-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 18px;
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: color 0.15s, border-color 0.15s;
+      line-height: 1;
+    }
+    .close-btn:hover { color: var(--text); border-color: #444; }
+
+    .modal-body {
+      padding: 32px 36px 40px;
+    }
+
+    /* ── SUMMARY TABLE ── */
+    .summary-section {
+      margin-bottom: 36px;
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0;
+    }
+
+    .summary-row {
+      display: grid;
+      grid-template-columns: 180px 80px 1fr;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      padding: 13px 0;
+      align-items: start;
+    }
+
+    @media (max-width: 600px) {
+      .summary-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+    }
+
+    .row-topic {
+      font-size: 13px;
+      font-weight: 500;
+      color: #B0ADA6;
+      padding-right: 16px;
+    }
+
+    .row-type {
+      padding-right: 12px;
+    }
+
+    .row-insight {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 80px 0;
+      color: var(--muted);
+    }
+
+    /* ── LEGEND ── */
+    .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+      padding: 14px 18px;
+      background: var(--surface2);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 32px 40px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="header-left">
+    <h1>Podcast <em>Summaries</em></h1>
+    <p>Structured notes from conversations worth returning to</p>
+  </div>
+  <svg class="signal-mark" width="48" height="48" viewBox="0 0 48 48" fill="none">
+    <circle cx="24" cy="24" r="3" fill="#E8A838"/>
+    <path d="M16 24 A8 8 0 0 1 32 24" stroke="#E8A838" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M10 24 A14 14 0 0 1 38 24" stroke="#E8A838" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.6"/>
+    <path d="M4 24 A20 20 0 0 1 44 24" stroke="#E8A838" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.3"/>
+  </svg>
+</header>
+
+<!-- ── GRID ── -->
+<main>
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer>Add new summaries by editing the <code>SUMMARIES</code> array in this file.</footer>
+
+<!-- ── MODAL ── -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title-el">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-ep" id="modal-ep"></div>
+        <div class="modal-title" id="modal-title-el"></div>
+        <div class="modal-guest" id="modal-guest"></div>
+      </div>
+      <button class="close-btn" id="close-btn" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  DATA — add new summaries here
+// ══════════════════════════════════════════════
+const SUMMARIES = [
+  {
+    id: "chris-kerner",
+    episode: "Ep. 001",
+    date: "July 2025",
+    title: "How to Build Side Hustles That Actually Work",
+    guest: "Chris Kerner",
+    guestTitle: "Serial Entrepreneur & King of Side Hustles",
+    preview: "80+ businesses, low hundreds of millions in revenue, and a philosophy built on copying what works, testing fast, and ignoring passion until you can afford it.",
+    tags: ["Mindset", "Ideas", "Warning"],
+    rowCount: 38,
+    sections: [
+      {
+        label: "Who Chris Is & His Backstory",
+        rows: [
+          { topic: "Origin story", type: "m", insight: "At 9, sold golf balls from his yard to buy a bike. That planted the belief that business is approachable — not reserved for a special class of people." },
+          { topic: "80+ businesses launched", type: "m", insight: "Most were abandoned, fizzled, or failed. Cumulative revenue in the low hundreds of millions. The outcome was freedom, not a single big win. It's a numbers game." },
+          { topic: "What business gave him", type: "m", insight: "Dream house in his 20s, four kids, a lot of travel, 17-year marriage. Freedom came from volume of attempts, not one perfect bet." },
+        ]
+      },
+      {
+        label: "The Foundational Mindset",
+        rows: [
+          { topic: "The #1 blocker", type: "m", insight: "Caring what people think. The pain of your situation needs to outweigh that fear before you'll act. Until it does, no tactic helps." },
+          { topic: "Is now the best time?", type: "m", insight: "Every day gets better. AI, free trials, Facebook Marketplace, vibe coding — you can build, test and sell with almost zero capital. There is no idea today that requires quitting your job or raising money before testing." },
+          { topic: "Law of abundance", type: "m", insight: "Business is not zero-sum. Finding a competitor doing something is validation — they proved the market exists for you. Start where they are today, not where they started." },
+          { topic: "Ignore passion early", type: "m", insight: '"Follow the profit until you can afford to follow your passion." The overlap between what you love and what pays you is near zero at the start. Build your passion around commerce first.' },
+          { topic: "Lack of focus ≠ failure", type: "m", insight: "Distraction is a signal, not a character flaw. When something has real product-market fit, you won't be distracted. If you keep looking away, the thing isn't right yet." },
+          { topic: "Delusions of grandeur", type: "m", insight: 'A psychiatrist told Chris he had "delusions of grandeur" in college. He kept the report in his desk drawer for motivation. What looks delusional from the outside is just a plan with a long time horizon.' },
+        ]
+      },
+      {
+        label: "Copying What Works",
+        rows: [
+          { topic: "Copy first, tweak later", type: "i", insight: "Find a working competitor and replicate exactly — pricing, website structure, niche, everything. Adding your own spin at the start is ego disguised as strategy. You don't know enough yet to know what's worth changing." },
+          { topic: "Web Archive + SimilarWeb", type: "i", insight: "Use Web Archive to see how a competitor's site looked over a decade. Overlay with SimilarWeb traffic data. Reverse-engineer what moved the needle and skip years of trial and error." },
+          { topic: "iPhone screen recycling", type: "i", insight: "A real example: a caller offered to buy Chris's broken screens. Instead of just selling, he copied the recycling model. Year 1: $2M. Eventually exited for millions." },
+          { topic: "Assume competitors are smart", type: "m", insight: "If a company has confusing pricing, they learned the hard way why it needs to be that way. Don't assume they're idiots. Copy their model and let your own experience reveal what to improve." },
+        ]
+      },
+      {
+        label: "Old Problems vs New Problems",
+        rows: [
+          { topic: "Old problems", type: "m", insight: "Hiring, cash flow, legal, pricing — these are solved. Find someone who solved them in the last decade and copy that. Don't experiment here. It costs years." },
+          { topic: "New problems", type: "m", insight: "Genuinely new challenges (AI integration, new platforms) have no blueprint. Experiment freely here. The mistake is spending energy experimenting on old problems instead of new ones." },
+          { topic: "The Buc-ee's story", type: "i", insight: "Noticed a cult US gas station brand had no online store. Bought one of everything, photographed it, built a site, emailed journalists. One story went viral. Did hundreds of thousands in month 1. Five years later, still running." },
+          { topic: "Shorten idea-to-action gap", type: "i", insight: "The faster you act on ideas, the stronger your bias-for-action muscle becomes. Even failed experiments answer the question and stop you losing sleep over 'what if.'" },
+        ]
+      },
+      {
+        label: "Validating Ideas",
+        rows: [
+          { topic: "The 2-week rule", type: "i", insight: "If you're still thinking about an idea two weeks later without forcing yourself to, it has signal. Most ideas die overnight. The ones that stick deserve a test." },
+          { topic: "What validation actually means", type: "m", insight: "Not 'people said it was good.' It's the boulder chasing you — you can't sleep because of demand, you're not distracted by the next thing. That is product-market fit." },
+          { topic: "Facebook as the test lab", type: "i", insight: "Post a mock-up on Facebook Marketplace with different form factors and price points. Track views, clicks, messages. Put $10 behind the winner. Do this before ordering product or building anything." },
+          { topic: "In-person beats online", type: "i", insight: "Friends online will say 'it's great.' Strangers at a farmers market will show you on their face whether it is. All three signals aligning (words, reaction, body language) = real signal." },
+          { topic: "Facebook Ads: must-have skill", type: "i", insight: "Chris calls it 'the infinite money glitch.' You can become proficient in a few days by running real ads. Very few people have this skill — that's the opportunity." },
+        ]
+      },
+      {
+        label: "Business Ideas by Budget",
+        rows: [
+          { topic: "$500 — AI implementation agency", type: "i", insight: "77% of small businesses know AI would transform them; 5% use it meaningfully. Learn vibe coding tools (Replit, Lovable), build a site, run local Facebook ads. Charge $500–$5,000 upfront + 20% monthly retainer. Copy-paste the same solution to every similar business in a niche." },
+          { topic: "$500 — Drop servicing", type: "i", insight: "Build a professional website for a home service. Run ads to generate leads. Subcontract the actual work to a local operator. You're marketing; they're fulfillment. Charge a premium for the better UX." },
+          { topic: "$500 — Directory websites", type: "i", insight: "Scrape a niche category in a local market. Build with a vibe coding tool. Let SEO do the work — no ads needed. Revenue from display ads or charging businesses for priority placement. Run as a portfolio of dozens of sites." },
+          { topic: "$500 — Vending machines", type: "i", insight: "Buy a used machine on Facebook Marketplace ($300–$400). Stock from Costco (~$100). Pitch one business owner to host it. Doritos and Coke outperform healthy alternatives. Apartment lobbies outperform auto shops. Scale to 100 machines — 20 will be stars." },
+          { topic: "$1,000 — Wedding rentals", type: "i", insight: "Build a wedding arch from lumber (~$200–$300). Rent it for ~$1,000 per wedding. Approach wedding planners (not brides) via The Knot, Zola, Wedding Wire. One good contact = potentially one booking per week." },
+          { topic: "$1,000 — Local email newsletter", type: "i", insight: "Use a free trial of Beehive or ConvertKit. Put the full $1,000 into Meta ads targeting one city. Acquire ~1,000 subscribers at ~$1 each. Write it yourself — must feel local. Charge local businesses $500/send. Break even in ~2 months. Clone in more cities to scale." },
+          { topic: "$5,000 — Small RV parks", type: "i", insight: "Find 100 small parks (3–10 pads) on Google Maps within 3 hours. Call every one — 2–3 per 100 will be deals. Use $2,000 for due diligence. Negotiate seller financing. Raise occupancy with a free website. 3–10x more profitable per dollar than a single-family rental." },
+        ]
+      },
+      {
+        label: "Entrepreneurship: The Real Trade-Offs",
+        rows: [
+          { topic: "Is it for everyone?", type: "m", insight: "No — but you need to find that out yourself. The person who shouldn't: late 40s, good income, likes their job. The person who should: miserable in their role, good ideas, mid-career enough to absorb a pivot." },
+          { topic: "The real trade-off", type: "m", insight: '"There are no solutions, only trade-offs." Entrepreneurship trades stability for control. Many people like the idea of it but hate the daily grind. Figure out which one you are before you quit anything.' },
+          { topic: "You are not free", type: "m", insight: "Entrepreneurs answer to team members, investors, suppliers, and clients. Often less free than a 9-to-5. Don't enter it chasing independence — enter it because you want that specific set of responsibilities." },
+          { topic: "Don't quit your job yet", type: "w", insight: "The signal to quit: ads are converting profitably at scale, you see a clear path, and your boss would probably take you back. That's when you burn the boats — not at the idea stage." },
+          { topic: "The plan B paradox", type: "m", insight: "Rationally, keep a plan B. But every time Chris's boats were burned for him (by circumstance), plan A thrived — not from necessity, but from the chip on his shoulder. Research backs this: people with a plan B work measurably less hard at plan A." },
+        ]
+      },
+      {
+        label: "Business Partners & Equity",
+        rows: [
+          { topic: "Solo founder first", type: "w", insight: "Failure rates are statistically higher with co-founders. Start solo to learn who you are as a business person. Only then do you know what to look for in a partner." },
+          { topic: "50/50 is almost never right", type: "w", insight: "For 50/50 to work: both parties must always be all-in, contribute equally, grow at the same rate, and be completely selfless — for the entire life of the business. Define equity at a milestone (e.g. $10K revenue), not at brunch on day one." },
+          { topic: "Profit share over equity", type: "i", insight: "Most equity goes to zero. Cutting operators into quarterly profit-sharing pays them now and feels more real. Less resentment than a vague equity promise that may never materialise." },
+        ]
+      },
+      {
+        label: "What to Avoid",
+        rows: [
+          { topic: "Mirage opportunities", type: "w", insight: "If everyone is trying to solve something and nobody's succeeding, stay away. Examples: campus event apps, podcast tool businesses, group social apps. Something fundamental in the assumption is wrong and you probably can't see what from the outside." },
+          { topic: "Chasing 'sexy'", type: "w", insight: "The sexiest ideas are the most competitive. Go as unsexy as possible — nobody's looking there. RV parks, directory websites, vending machines, wedding arches. That's where the margin lives." },
+          { topic: "Passive income too early", type: "w", insight: "You must earn passive income through active, sweaty, ugly income first. The longer you do that, the more realistic true passivity becomes. Chasing passive income from day one usually means earning nothing." },
+        ]
+      },
+    ]
+  },
+  // ── ADD MORE SUMMARIES BELOW ──
+  // {
+  //   id: "guest-name",
+  //   episode: "Ep. 002",
+  //   date: "August 2025",
+  //   title: "Episode Title",
+  //   guest: "Guest Name",
+  //   guestTitle: "Guest Role",
+  //   preview: "Short preview text shown on the card.",
+  //   tags: ["Mindset", "Ideas"],
+  //   rowCount: 20,
+  //   sections: [
+  //     {
+  //       label: "Section Title",
+  //       rows: [
+  //         { topic: "Topic", type: "m", insight: "Insight text." },
+  //       ]
+  //     }
+  //   ]
+  // },
+];
+
+// ══════════════════════════════════════════════
+//  RENDER GRID
+// ══════════════════════════════════════════════
+const tagLabels = { Mindset: "Mindset", Ideas: "Ideas", Warning: "Warnings" };
+const grid = document.getElementById('grid');
+
+function renderGrid() {
+  grid.innerHTML = '';
+  if (SUMMARIES.length === 0) {
+    grid.innerHTML = '<div class="empty">No summaries yet — add some to the <code>SUMMARIES</code> array.</div>';
+    return;
+  }
+  SUMMARIES.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', `Open summary: ${s.title}`);
+
+    const tagHTML = s.tags.map(t => {
+      const cls = t === 'Mindset' ? 'pill-m' : t === 'Ideas' ? 'pill-i' : 'pill-w';
+      return `<span class="pill ${cls}">${t}</span>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="card-meta">
+        <span class="card-ep">${s.episode}</span>
+        <span class="card-date">${s.date}</span>
+      </div>
+      <h2>${s.title}</h2>
+      <div class="card-guest">with <strong>${s.guest}</strong> · ${s.guestTitle}</div>
+      <div class="card-tags">${tagHTML}</div>
+      <p class="card-preview">${s.preview}</p>
+      <div class="card-footer">
+        <span class="card-count">${s.rowCount} key points</span>
+        <span class="card-arrow">→</span>
+      </div>
+    `;
+
+    card.addEventListener('click', () => openModal(s));
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openModal(s); });
+    grid.appendChild(card);
+  });
+}
+
+// ══════════════════════════════════════════════
+//  MODAL
+// ══════════════════════════════════════════════
+const overlay = document.getElementById('overlay');
+const modalEp = document.getElementById('modal-ep');
+const modalTitle = document.getElementById('modal-title-el');
+const modalGuest = document.getElementById('modal-guest');
+const modalBody = document.getElementById('modal-body');
+const closeBtn = document.getElementById('close-btn');
+
+function typeClass(t) {
+  return t === 'm' ? 'pill-m' : t === 'i' ? 'pill-i' : 'pill-w';
+}
+function typeLabel(t) {
+  return t === 'm' ? 'Mindset' : t === 'i' ? 'Idea' : 'Warning';
+}
+
+function openModal(s) {
+  modalEp.textContent = s.episode;
+  modalTitle.textContent = s.title;
+  modalGuest.innerHTML = `<strong>${s.guest}</strong> · ${s.guestTitle}`;
+
+  let bodyHTML = `
+    <div class="legend">
+      <span class="legend-item"><span class="pill pill-m">Mindset</span> Mental models & philosophy</span>
+      <span class="legend-item"><span class="pill pill-i">Idea</span> Actionable business ideas</span>
+      <span class="legend-item"><span class="pill pill-w">Warning</span> Mistakes & things to avoid</span>
+    </div>
+  `;
+
+  s.sections.forEach(sec => {
+    bodyHTML += `<div class="summary-section">`;
+    bodyHTML += `<div class="section-label">${sec.label}</div>`;
+    sec.rows.forEach(row => {
+      bodyHTML += `
+        <div class="summary-row">
+          <div class="row-topic">${row.topic}</div>
+          <div class="row-type"><span class="pill ${typeClass(row.type)}">${typeLabel(row.type)}</span></div>
+          <div class="row-insight">${row.insight}</div>
+        </div>
+      `;
+    });
+    bodyHTML += `</div>`;
+  });
+
+  modalBody.innerHTML = bodyHTML;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  closeBtn.focus();
+}
+
+function closeModal() {
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+closeBtn.addEventListener('click', closeModal);
+overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+renderGrid();
+</script>
+</body>
+</html>
